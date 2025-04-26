@@ -93,7 +93,10 @@
     "actionDeleted": "Действие успешно удалено",
     "actionAssigned": "Действие успешно назначено",
     "actionTemplates": "Шаблоны действий",
-    "assignedActions": "Назначенные действия"
+    "assignedActions": "Назначенные действия",
+    "noActions": "Действий пока нет. Добавьте первое действие!",
+    "search": "Поиск действий",
+    "pointsValue": "{{ points }} баллов"
   },
   "suggestions": {
     "suggestAction": "Предложить действие",

@@ -93,7 +93,10 @@
     "actionDeleted": "Action deleted successfully",
     "actionAssigned": "Action assigned successfully",
     "actionTemplates": "Action Templates",
-    "assignedActions": "Assigned Actions"
+    "assignedActions": "Assigned Actions",
+    "noActions": "No actions created yet. Add your first action!",
+    "search": "Search actions",
+    "pointsValue": "{{ points }} pts"
   },
   "suggestions": {
     "suggestAction": "Suggest Action",
