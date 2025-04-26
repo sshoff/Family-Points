@@ -49,6 +49,16 @@ const isHead = (req: Request, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Get family members route
+  app.get("/api/family-members", isAuthenticated, async (req, res) => {
+    try {
+      const familyMembers = await storage.getFamilyMembers(req.user!.familyId!);
+      res.json(familyMembers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch family members" });
+    }
+  });
 
   // Action templates routes
   app.get("/api/action-templates", isAuthenticated, async (req, res) => {

@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { UserRole } from "@shared/schema";
+import { insertActionTemplateSchema } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
 import {
@@ -22,61 +22,65 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
-// Schema for invitation form
-const inviteFormSchema = z.object({
-  email: z.string().email(),
-  role: z.enum([UserRole.PARENT, UserRole.CHILD]),
+// Extend the schema to use in the form
+const actionTemplateFormSchema = insertActionTemplateSchema.extend({
+  points: z.coerce.number().min(-100).max(100),
 });
 
-type InviteFormValues = z.infer<typeof inviteFormSchema>;
+type ActionTemplateFormValues = z.infer<typeof actionTemplateFormSchema>;
 
-type InviteFormProps = {
+type ActionTemplateFormProps = {
   open: boolean;
   onClose: () => void;
+  template?: {
+    id: number;
+    name: string;
+    points: number;
+  };
 };
 
-export const InviteForm = ({ open, onClose }: InviteFormProps) => {
+export const ActionTemplateForm = ({ open, onClose, template }: ActionTemplateFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
-  const form = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteFormSchema),
+  const form = useForm<ActionTemplateFormValues>({
+    resolver: zodResolver(actionTemplateFormSchema),
     defaultValues: {
-      email: "",
-      role: UserRole.CHILD,
+      name: template?.name || "",
+      points: template?.points || 0,
     },
   });
 
-  const onSubmit = async (values: InviteFormValues) => {
+  const onSubmit = async (values: ActionTemplateFormValues) => {
     setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/invitations", values);
-      
-      // Invalidate family members query to refresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/invitations"] });
-      
-      toast({
-        title: t("family.inviteSuccess"),
-        description: t("family.inviteSuccessDescription"),
-      });
+      if (template) {
+        // Update existing template
+        await apiRequest("PATCH", `/api/action-templates/${template.id}`, values);
+        toast({
+          title: t("action.updateSuccess"),
+          description: t("action.updateSuccessDescription"),
+        });
+      } else {
+        // Create new template
+        await apiRequest("POST", "/api/action-templates", values);
+        toast({
+          title: t("action.createSuccess"),
+          description: t("action.createSuccessDescription"),
+        });
+      }
+      // Invalidate queries to refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/action-templates"] });
       onClose();
     } catch (error) {
       toast({
-        title: t("family.inviteError"),
-        description: t("family.inviteErrorDescription"),
+        title: t("action.error"),
+        description: t("action.errorDescription"),
         variant: "destructive",
       });
     } finally {
@@ -88,19 +92,21 @@ export const InviteForm = ({ open, onClose }: InviteFormProps) => {
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t("family.inviteMember")}</DialogTitle>
+          <DialogTitle>
+            {template ? t("action.editAction") : t("action.createAction")}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("family.email")}</FormLabel>
+                  <FormLabel>{t("action.name")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="email@example.com"
+                      placeholder={t("action.namePlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -110,24 +116,17 @@ export const InviteForm = ({ open, onClose }: InviteFormProps) => {
             />
             <FormField
               control={form.control}
-              name="role"
+              name="points"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t("family.role")}</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t("family.selectRole")} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value={UserRole.PARENT}>{t("family.roleParent")}</SelectItem>
-                      <SelectItem value={UserRole.CHILD}>{t("family.roleChild")}</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>{t("action.points")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder={t("action.pointsPlaceholder")}
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -137,7 +136,7 @@ export const InviteForm = ({ open, onClose }: InviteFormProps) => {
                 {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {t("family.sendInvite")}
+                {template ? t("common.update") : t("common.create")}
               </Button>
             </DialogFooter>
           </form>
