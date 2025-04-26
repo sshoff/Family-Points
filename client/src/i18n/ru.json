@@ -122,7 +122,24 @@
       "errorDescription": "При обработке вашего запроса произошла ошибка.",
       "confirmDelete": "Удалить шаблон?",
       "confirmDeleteDescription": "Это приведет к безвозвратному удалению шаблона. Это действие нельзя отменить."
-    }
+    },
+    "noAssignedActions": "Назначенные действия не найдены",
+    "assignFirst": "Назначить первое действие",
+    "completed": "Выполнено",
+    "pending": "В ожидании",
+    "assignedTo": "Назначено",
+    "quantity": "Количество",
+    "points": "Баллы",
+    "forDate": "На дату",
+    "markComplete": "Отметить как выполненное",
+    "confirmDelete": "Удалить назначенное действие?",
+    "confirmDeleteAssignedDescription": "Это приведет к безвозвратному удалению назначенного действия. Это действие нельзя отменить.",
+    "selectChild": "Выберите ребенка",
+    "editAction": "Редактировать действие",
+    "assignAction": "Назначить действие",
+    "assign": "Назначить",
+    "description": "Описание",
+    "descriptionPlaceholder": "Введите описание (необязательно)"
   },
   "suggestions": {
     "suggestAction": "Предложить действие",

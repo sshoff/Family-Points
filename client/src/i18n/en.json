@@ -122,7 +122,24 @@
       "errorDescription": "There was an error processing your request.",
       "confirmDelete": "Delete Template?",
       "confirmDeleteDescription": "This will permanently delete the template. This action cannot be undone."
-    }
+    },
+    "noAssignedActions": "No assigned actions found",
+    "assignFirst": "Assign your first action",
+    "completed": "Completed",
+    "pending": "Pending",
+    "assignedTo": "Assigned to",
+    "quantity": "Quantity",
+    "points": "Points",
+    "forDate": "For date",
+    "markComplete": "Mark Complete",
+    "confirmDelete": "Delete Assigned Action?",
+    "confirmDeleteAssignedDescription": "This will permanently delete the assigned action. This action cannot be undone.",
+    "selectChild": "Select Child",
+    "editAction": "Edit Action",
+    "assignAction": "Assign Action",
+    "assign": "Assign",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description (optional)"
   },
   "suggestions": {
     "suggestAction": "Suggest Action",
