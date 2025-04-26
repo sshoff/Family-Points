@@ -2,11 +2,10 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import { ActionTemplateForm } from "./action-template-form";
-import { ActionTemplate } from "@shared/schema";
+import { ActionTemplate, UserRole } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
-import { UserRole } from "@shared/schema";
+import { ActionTemplateForm } from "./action-template-form";
 
 import {
   AlertDialog,
@@ -19,16 +18,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
 
 export const ActionTemplateList = () => {
   const { t } = useTranslation();
@@ -39,18 +38,20 @@ export const ActionTemplateList = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<ActionTemplate | null>(null);
 
-  const { data: actionTemplates, isLoading } = useQuery<ActionTemplate[]>({
+  // Fetch action templates
+  const { data: templates, isLoading } = useQuery<ActionTemplate[]>({
     queryKey: ["/api/action-templates"],
   });
 
-  const canManageTemplates = user?.role === UserRole.HEAD || user?.role === UserRole.PARENT;
+  // Check if user is head/parent (can manage)
+  const canManage = user?.role === UserRole.HEAD || user?.role === UserRole.PARENT;
 
-  const handleAddNew = () => {
+  const handleCreateTemplate = () => {
     setSelectedTemplate(null);
     setIsFormOpen(true);
   };
 
-  const handleEdit = (template: ActionTemplate) => {
+  const handleEditTemplate = (template: ActionTemplate) => {
     setSelectedTemplate(template);
     setIsFormOpen(true);
   };
@@ -62,15 +63,15 @@ export const ActionTemplateList = () => {
       await apiRequest("DELETE", `/api/action-templates/${templateToDelete.id}`);
       queryClient.invalidateQueries({ queryKey: ["/api/action-templates"] });
       toast({
-        title: t("action.deleteSuccess"),
-        description: t("action.deleteSuccessDescription"),
+        title: t("action.template.deleteSuccess"),
+        description: t("action.template.deleteSuccessDescription"),
       });
       setDeleteConfirmOpen(false);
       setTemplateToDelete(null);
     } catch (error) {
       toast({
-        title: t("action.error"),
-        description: t("action.errorDescription"),
+        title: t("action.template.error"),
+        description: t("action.template.errorDescription"),
         variant: "destructive",
       });
     }
@@ -90,55 +91,77 @@ export const ActionTemplateList = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">{t("action.templates")}</h2>
-        {canManageTemplates && (
-          <Button onClick={handleAddNew}>
+        <h2 className="text-2xl font-bold">{t("action.template.title")}</h2>
+        
+        {canManage && (
+          <Button onClick={handleCreateTemplate}>
             <Plus className="h-4 w-4 mr-2" />
-            {t("action.addNew")}
+            {t("action.template.create")}
           </Button>
         )}
       </div>
-      
-      {actionTemplates?.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-muted-foreground">{t("action.noTemplates")}</p>
+
+      {!templates?.length ? (
+        <div className="text-center py-8 border rounded-lg bg-background">
+          <p className="text-muted-foreground">{t("action.template.noTemplates")}</p>
+          {canManage && (
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={handleCreateTemplate}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {t("action.template.createFirst")}
+            </Button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {actionTemplates?.map((template) => (
-            <Card key={template.id}>
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>{template.name}</span>
-                  <Badge variant={template.points > 0 ? "default" : "destructive"}>
-                    {template.points > 0 ? "+" : ""}{template.points} {t("action.pts")}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              {canManageTemplates && (
-                <CardFooter className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(template)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    {t("common.edit")}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => confirmDelete(template)}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    {t("common.delete")}
-                  </Button>
-                </CardFooter>
-              )}
-            </Card>
-          ))}
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("action.template.name")}</TableHead>
+                <TableHead>{t("action.template.description")}</TableHead>
+                <TableHead className="text-right">{t("action.template.points")}</TableHead>
+                {canManage && <TableHead className="text-right">{t("common.actions")}</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {templates.map((template) => (
+                <TableRow key={template.id}>
+                  <TableCell className="font-medium">{template.name}</TableCell>
+                  <TableCell>{template.description}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant={template.points >= 0 ? "default" : "destructive"}>
+                      {template.points} {t("action.template.pointsUnit")}
+                    </Badge>
+                  </TableCell>
+                  {canManage && (
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditTemplate(template)}
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">{t("common.edit")}</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => confirmDelete(template)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <span className="sr-only">{t("common.delete")}</span>
+                      </Button>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -153,9 +176,9 @@ export const ActionTemplateList = () => {
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("action.confirmDelete")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("action.template.confirmDelete")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("action.confirmDeleteDescription")}
+              {t("action.template.confirmDeleteDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
