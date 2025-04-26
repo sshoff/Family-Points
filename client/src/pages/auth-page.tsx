@@ -123,45 +123,33 @@ const AuthPage = () => {
             {isLogin ? (
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-4">
-                  <FormField
-                    control={loginForm.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.username')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder={t('auth.usernamePlaceholder')}
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-username">{t('auth.username')}</Label>
+                    <Input
+                      id="login-username"
+                      type="text"
+                      placeholder={t('auth.usernamePlaceholder')}
+                      value={loginForm.watch('username')}
+                      onChange={(e) => loginForm.setValue('username', e.target.value)}
+                    />
+                    {loginForm.formState.errors.username && (
+                      <p className="text-sm text-red-500">{loginForm.formState.errors.username.message}</p>
                     )}
-                  />
+                  </div>
                   
-                  <FormField
-                    control={loginForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.password')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="password"
-                            placeholder="••••••••"
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">{t('auth.password')}</Label>
+                    <Input
+                      id="login-password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={loginForm.watch('password')}
+                      onChange={(e) => loginForm.setValue('password', e.target.value)}
+                    />
+                    {loginForm.formState.errors.password && (
+                      <p className="text-sm text-red-500">{loginForm.formState.errors.password.message}</p>
                     )}
-                  />
+                  </div>
                   
                   <Button 
                     type="submit"
@@ -186,132 +174,96 @@ const AuthPage = () => {
             ) : (
               <Form {...registerForm}>
                 <form onSubmit={registerForm.handleSubmit(handleRegisterSubmit)} className="space-y-4">
-                  <FormField
-                    control={registerForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.name')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder={t('auth.namePlaceholder')}
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">{t('auth.name')}</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder={t('auth.namePlaceholder')}
+                      value={registerForm.watch('name')}
+                      onChange={(e) => registerForm.setValue('name', e.target.value)}
+                    />
+                    {registerForm.formState.errors.name && (
+                      <p className="text-sm text-red-500">{registerForm.formState.errors.name.message}</p>
                     )}
-                  />
+                  </div>
                   
-                  <FormField
-                    control={registerForm.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.username')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder={t('auth.usernamePlaceholder')}
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="username">{t('auth.username')}</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder={t('auth.usernamePlaceholder')}
+                      value={registerForm.watch('username')}
+                      onChange={(e) => registerForm.setValue('username', e.target.value)}
+                    />
+                    {registerForm.formState.errors.username && (
+                      <p className="text-sm text-red-500">{registerForm.formState.errors.username.message}</p>
                     )}
-                  />
+                  </div>
                   
-                  <FormField
-                    control={registerForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.email')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="email"
-                            placeholder={t('auth.emailPlaceholder')}
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t('auth.email')}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={t('auth.emailPlaceholder')}
+                      value={registerForm.watch('email')}
+                      onChange={(e) => registerForm.setValue('email', e.target.value)}
+                    />
+                    {registerForm.formState.errors.email && (
+                      <p className="text-sm text-red-500">{registerForm.formState.errors.email.message}</p>
                     )}
-                  />
+                  </div>
                   
-                  <FormField
-                    control={registerForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.password')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="password"
-                            placeholder="••••••••"
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">{t('auth.password')}</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={registerForm.watch('password')}
+                      onChange={(e) => registerForm.setValue('password', e.target.value)}
+                    />
+                    {registerForm.formState.errors.password && (
+                      <p className="text-sm text-red-500">{registerForm.formState.errors.password.message}</p>
                     )}
-                  />
+                  </div>
                   
-                  <FormField
-                    control={registerForm.control}
-                    name="familyName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('auth.familyName')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder={t('auth.familyNamePlaceholder')}
-                            onChange={field.onChange}
-                            value={field.value || ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label htmlFor="familyName">{t('auth.familyName')}</Label>
+                    <Input
+                      id="familyName"
+                      type="text"
+                      placeholder={t('auth.familyNamePlaceholder')}
+                      value={registerForm.watch('familyName')}
+                      onChange={(e) => registerForm.setValue('familyName', e.target.value)}
+                    />
+                    {registerForm.formState.errors.familyName && (
+                      <p className="text-sm text-red-500">{registerForm.formState.errors.familyName.message}</p>
                     )}
-                  />
+                  </div>
                   
-                  <FormField
-                    control={registerForm.control}
-                    name="role"
-                    render={({ field }) => (
-                      <FormItem className="space-y-2">
-                        <FormLabel>{t('auth.role')}</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={(value) => field.onChange(value as UserRole)}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value={UserRole.HEAD} id="head" />
-                              <Label htmlFor="head" className="font-normal">{t('auth.roleHead')}</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value={UserRole.CHILD} id="child" />
-                              <Label htmlFor="child" className="font-normal">{t('auth.roleChild')}</Label>
-                            </div>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-2">
+                    <Label>{t('auth.role')}</Label>
+                    <RadioGroup
+                      value={registerForm.watch('role')}
+                      onValueChange={(value) => registerForm.setValue('role', value as UserRole)}
+                      className="flex flex-col space-y-1"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={UserRole.HEAD} id="head" />
+                        <Label htmlFor="head" className="font-normal">{t('auth.roleHead')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={UserRole.CHILD} id="child" />
+                        <Label htmlFor="child" className="font-normal">{t('auth.roleChild')}</Label>
+                      </div>
+                    </RadioGroup>
+                    {registerForm.formState.errors.role && (
+                      <p className="text-sm text-red-500">{registerForm.formState.errors.role.message}</p>
                     )}
-                  />
+                  </div>
                   
                   <Button 
                     type="submit"
