@@ -2,17 +2,16 @@ import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import AuthPage from "@/pages/auth-page";
+import LandingPage from "@/pages/landing-page";
 
-// Simple app that just shows the auth page for now
+// Simple app that just shows the landing page for now
 function App() {
   return (
     <TooltipProvider>
       <Toaster />
       <div className="min-h-screen bg-gray-50">
         <Switch>
-          <Route path="/" component={AuthPage} />
-          <Route path="/auth" component={AuthPage} />
+          <Route path="/" component={LandingPage} />
           <Route component={NotFound} />
         </Switch>
       </div>
