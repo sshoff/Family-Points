@@ -91,7 +91,9 @@
     "actionCreated": "Action created successfully",
     "actionUpdated": "Action updated successfully",
     "actionDeleted": "Action deleted successfully",
-    "actionAssigned": "Action assigned successfully"
+    "actionAssigned": "Action assigned successfully",
+    "actionTemplates": "Action Templates",
+    "assignedActions": "Assigned Actions"
   },
   "suggestions": {
     "suggestAction": "Suggest Action",
@@ -111,6 +113,7 @@
     "suggestNew": "Suggest New Action"
   },
   "family": {
+    "title": "Family Members",
     "inviteMembers": "Invite Members",
     "role": "Role",
     "email": "Email",

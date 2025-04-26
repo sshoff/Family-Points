@@ -31,8 +31,8 @@ const ActionsPage = () => {
 
       <Tabs defaultValue="templates" className="w-full">
         <TabsList className="grid w-full md:w-[400px] grid-cols-2">
-          <TabsTrigger value="templates">{t('actions.templates')}</TabsTrigger>
-          <TabsTrigger value="assigned">{t('actions.assigned')}</TabsTrigger>
+          <TabsTrigger value="templates">{t('actions.actionTemplates')}</TabsTrigger>
+          <TabsTrigger value="assigned">{t('actions.assignedActions')}</TabsTrigger>
         </TabsList>
         <TabsContent value="templates" className="mt-6">
           <ActionTemplateList />

@@ -91,7 +91,9 @@
     "actionCreated": "Действие успешно создано",
     "actionUpdated": "Действие успешно обновлено",
     "actionDeleted": "Действие успешно удалено",
-    "actionAssigned": "Действие успешно назначено"
+    "actionAssigned": "Действие успешно назначено",
+    "actionTemplates": "Шаблоны действий",
+    "assignedActions": "Назначенные действия"
   },
   "suggestions": {
     "suggestAction": "Предложить действие",
@@ -111,6 +113,7 @@
     "suggestNew": "Предложить новое действие"
   },
   "family": {
+    "title": "Члены семьи",
     "inviteMembers": "Пригласить участников",
     "role": "Роль",
     "email": "Электронная почта",
