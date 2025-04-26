@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Route, useLocation, useRouter } from "wouter";
 import { useEffect } from "react";
+import { NavBar } from "@/components/layout/nav-bar";
 
 export function ProtectedRoute({
   path,
