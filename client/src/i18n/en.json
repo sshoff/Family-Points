@@ -91,7 +91,38 @@
     "actionCreated": "Action created successfully",
     "actionUpdated": "Action updated successfully",
     "actionDeleted": "Action deleted successfully",
-    "actionAssigned": "Action assigned successfully"
+    "actionAssigned": "Action assigned successfully",
+    "actionTemplates": "Action Templates",
+    "assignedActions": "Assigned Actions",
+    "noActions": "No actions created yet. Add your first action!",
+    "search": "Search actions",
+    "pointsValue": "{{ points }} pts"
+  },
+  "action": {
+    "template": {
+      "title": "Action Templates",
+      "name": "Name",
+      "description": "Description",
+      "points": "Points",
+      "pointsUnit": "pts",
+      "pointsNegativeAllowed": "negative values allowed",
+      "create": "Create Template",
+      "createFirst": "Create your first template",
+      "edit": "Edit Template",
+      "namePlaceholder": "Enter action name",
+      "descriptionPlaceholder": "Enter description (optional)",
+      "noTemplates": "No action templates found",
+      "createSuccess": "Template created successfully",
+      "createSuccessDescription": "The action template has been created.",
+      "updateSuccess": "Template updated successfully",
+      "updateSuccessDescription": "The action template has been updated.",
+      "deleteSuccess": "Template deleted successfully",
+      "deleteSuccessDescription": "The action template has been deleted.",
+      "error": "Error",
+      "errorDescription": "There was an error processing your request.",
+      "confirmDelete": "Delete Template?",
+      "confirmDeleteDescription": "This will permanently delete the template. This action cannot be undone."
+    }
   },
   "suggestions": {
     "suggestAction": "Suggest Action",
@@ -111,6 +142,7 @@
     "suggestNew": "Suggest New Action"
   },
   "family": {
+    "title": "Family Members",
     "inviteMembers": "Invite Members",
     "role": "Role",
     "email": "Email",
@@ -126,6 +158,9 @@
     "dateRange": "Date Range",
     "from": "From",
     "to": "To",
+    "date": "Date",
+    "points": "Points",
+    "status": "Status",
     "generateReport": "Generate Report",
     "actionsSummary": "Actions Summary",
     "pointsEarned": "Points Earned",

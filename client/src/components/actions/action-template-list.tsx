@@ -58,7 +58,7 @@ export const ActionTemplateList = () => {
 
   const handleDelete = async () => {
     if (!templateToDelete) return;
-    
+
     try {
       await apiRequest("DELETE", `/api/action-templates/${templateToDelete.id}`);
       queryClient.invalidateQueries({ queryKey: ["/api/action-templates"] });
@@ -94,7 +94,7 @@ export const ActionTemplateList = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">{t("action.template.title")}</h2>
-        
+
         {canManage && (
           <Button onClick={handleCreateTemplate}>
             <Plus className="h-4 w-4 mr-2" />
