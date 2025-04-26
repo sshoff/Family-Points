@@ -35,6 +35,7 @@ export const actionTemplates = pgTable("action_templates", {
   familyId: integer("family_id").references(() => families.id).notNull(),
   name: text("name").notNull(),
   points: real("points").notNull(),
+  description: text("description"),
   createdBy: integer("created_by").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -173,6 +174,7 @@ export const registerSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email().optional(),
   familyName: z.string().min(2).max(100),
+  role: z.enum([UserRole.HEAD, UserRole.PARENT, UserRole.CHILD]).default(UserRole.HEAD),
 });
 
 export const loginSchema = z.object({

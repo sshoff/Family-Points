@@ -1,16 +1,83 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'wouter';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuth } from '@/hooks/use-auth';
+import { loginSchema, registerSchema, UserRole } from '@shared/schema';
+import { CheckCircle2 } from 'lucide-react';
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from '@/hooks/use-toast';
+
+type LoginValues = z.infer<typeof loginSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
 
 const AuthPage = () => {
   const { t, i18n } = useTranslation();
   const [, navigate] = useLocation();
   const [isLogin, setIsLogin] = useState(true);
+  const { user, loginMutation, registerMutation } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Just redirect to dashboard for now
-    navigate('/dashboard');
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+  
+  // Login form
+  const loginForm = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+  });
+
+  // Register form
+  const registerForm = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+      name: '',
+      email: '',
+      role: UserRole.HEAD,
+      familyName: '',
+    },
+  });
+  
+  const handleLoginSubmit = (values: LoginValues) => {
+    loginMutation.mutate(values, {
+      onSuccess: () => {
+        navigate('/dashboard');
+      }
+    });
+  };
+  
+  const handleRegisterSubmit = (values: RegisterValues) => {
+    registerMutation.mutate(values, {
+      onSuccess: () => {
+        toast({
+          title: t('auth.registerSuccess'),
+          description: t('auth.registerSuccessDescription'),
+        });
+        navigate('/dashboard');
+      }
+    });
   };
   
   const changeLanguage = (lng: string) => {
@@ -49,88 +116,206 @@ const AuthPage = () => {
             </h2>
             <p className="text-center mb-6">
               {isLogin 
-                ? "Welcome back to FamilyPoints!" 
-                : "Join FamilyPoints to track your family's activities!"}
+                ? t('auth.welcomeBack') 
+                : t('auth.joinTracking')}
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('auth.name')}
-                  </label>
-                  <input 
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="John Doe"
+            
+            {isLogin ? (
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(handleLoginSubmit)} className="space-y-4">
+                  <FormField
+                    control={loginForm.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.username')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={t('auth.usernamePlaceholder')}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              )}
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t('auth.username')}
-                </label>
-                <input 
-                  type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="username"
-                />
-              </div>
-              
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('auth.email')}
-                  </label>
-                  <input 
-                    type="email"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="you@example.com"
+                  
+                  <FormField
+                    control={loginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="••••••••"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              )}
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  {t('auth.password')}
-                </label>
-                <input 
-                  type="password"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="••••••••"
-                />
-              </div>
-              
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('auth.familyName')}
-                  </label>
-                  <input 
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    placeholder="Smith Family"
+                  
+                  <Button 
+                    type="submit"
+                    className="w-full"
+                    disabled={loginMutation.isPending}
+                  >
+                    {loginMutation.isPending ? t('auth.loggingIn') : t('auth.loginButton')}
+                  </Button>
+                  
+                  <div className="text-center mt-4">
+                    <Button 
+                      type="button"
+                      variant="link"
+                      onClick={() => setIsLogin(false)} 
+                      className="text-sm"
+                    >
+                      {t('auth.switchToRegister')}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            ) : (
+              <Form {...registerForm}>
+                <form onSubmit={registerForm.handleSubmit(handleRegisterSubmit)} className="space-y-4">
+                  <FormField
+                    control={registerForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.name')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={t('auth.namePlaceholder')}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              )}
-              
-              <button 
-                type="submit"
-                className="w-full bg-primary-600 text-white py-2 rounded-md hover:bg-primary-700 transition"
-              >
-                {isLogin ? t('auth.loginButton') : t('auth.registerButton')}
-              </button>
-              
-              <div className="text-center mt-4">
-                <button 
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)} 
-                  className="text-sm text-primary-600 hover:underline"
-                >
-                  {isLogin ? t('auth.switchToRegister') : t('auth.switchToLogin')}
-                </button>
-              </div>
-            </form>
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.username')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={t('auth.usernamePlaceholder')}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.email')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder={t('auth.emailPlaceholder')}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.password')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="••••••••"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="familyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth.familyName')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={t('auth.familyNamePlaceholder')}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={registerForm.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel>{t('auth.role')}</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={(value) => field.onChange(value as UserRole)}
+                            defaultValue={field.value}
+                            className="flex flex-col space-y-1"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value={UserRole.HEAD} id="head" />
+                              <Label htmlFor="head" className="font-normal">{t('auth.roleHead')}</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value={UserRole.CHILD} id="child" />
+                              <Label htmlFor="child" className="font-normal">{t('auth.roleChild')}</Label>
+                            </div>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button 
+                    type="submit"
+                    className="w-full"
+                    disabled={registerMutation.isPending}
+                  >
+                    {registerMutation.isPending ? t('auth.registering') : t('auth.registerButton')}
+                  </Button>
+                  
+                  <div className="text-center mt-4">
+                    <Button 
+                      type="button"
+                      variant="link"
+                      onClick={() => setIsLogin(true)} 
+                      className="text-sm"
+                    >
+                      {t('auth.switchToLogin')}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            )}
           </div>
         </div>
       </div>
@@ -157,7 +342,7 @@ const AuthPage = () => {
           </div>
           
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            {t('auth.welcomeBack')}
+            {t('auth.heroTitle')}
           </h1>
           <p className="text-lg mb-6">
             {t('auth.startTracking')}
@@ -165,28 +350,20 @@ const AuthPage = () => {
           <div className="bg-white/10 rounded-lg p-4">
             <ul className="space-y-2">
               <li className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Track children's actions and rewards</span>
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                <span>{t('auth.featureTrack')}</span>
               </li>
               <li className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Assign points for completed tasks</span>
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                <span>{t('auth.featureAssign')}</span>
               </li>
               <li className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Generate detailed reports</span>
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                <span>{t('auth.featureReports')}</span>
               </li>
               <li className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                <span>Manage your family members</span>
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                <span>{t('auth.featureFamily')}</span>
               </li>
             </ul>
           </div>
