@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, timestamp, boolean, real, foreignKey } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -76,6 +77,87 @@ export const invitations = pgTable("invitations", {
   createdAt: timestamp("created_at").defaultNow(),
   accepted: boolean("accepted").default(false),
 });
+
+// Relations
+export const familiesRelations = relations(families, ({ many }: { many: any }) => ({
+  users: many(users),
+  actionTemplates: many(actionTemplates),
+  actionSuggestions: many(actionSuggestions),
+  invitations: many(invitations)
+}));
+
+export const usersRelations = relations(users, ({ one, many }: { one: any, many: any }) => ({
+  family: one(families, {
+    fields: [users.familyId],
+    references: [families.id]
+  }),
+  assignedActions: many(assignedActions, { relationName: "child_actions" }),
+  assignedByMe: many(assignedActions, { relationName: "assigner_actions" }),
+  createdTemplates: many(actionTemplates, { relationName: "creator" }),
+  suggestions: many(actionSuggestions, { relationName: "suggester" }),
+  decisionsMade: many(actionSuggestions, { relationName: "decider" }),
+  invitationsCreated: many(invitations, { relationName: "inviter" })
+}));
+
+export const actionTemplatesRelations = relations(actionTemplates, ({ one, many }: { one: any, many: any }) => ({
+  family: one(families, {
+    fields: [actionTemplates.familyId],
+    references: [families.id]
+  }),
+  creator: one(users, {
+    fields: [actionTemplates.createdBy],
+    references: [users.id],
+    relationName: "creator"
+  }),
+  assignedActions: many(assignedActions),
+  suggestions: many(actionSuggestions)
+}));
+
+export const assignedActionsRelations = relations(assignedActions, ({ one }: { one: any }) => ({
+  actionTemplate: one(actionTemplates, {
+    fields: [assignedActions.actionTemplateId],
+    references: [actionTemplates.id]
+  }),
+  child: one(users, {
+    fields: [assignedActions.childId],
+    references: [users.id],
+    relationName: "child_actions"
+  }),
+  assigner: one(users, {
+    fields: [assignedActions.assignedBy],
+    references: [users.id],
+    relationName: "assigner_actions"
+  })
+}));
+
+export const actionSuggestionsRelations = relations(actionSuggestions, ({ one }: { one: any }) => ({
+  actionTemplate: one(actionTemplates, {
+    fields: [actionSuggestions.actionTemplateId],
+    references: [actionTemplates.id]
+  }),
+  child: one(users, {
+    fields: [actionSuggestions.childId],
+    references: [users.id],
+    relationName: "suggester"
+  }),
+  decider: one(users, {
+    fields: [actionSuggestions.decidedBy],
+    references: [users.id],
+    relationName: "decider"
+  })
+}));
+
+export const invitationsRelations = relations(invitations, ({ one }: { one: any }) => ({
+  family: one(families, {
+    fields: [invitations.familyId],
+    references: [families.id]
+  }),
+  createdBy: one(users, {
+    fields: [invitations.createdBy],
+    references: [users.id],
+    relationName: "inviter"
+  })
+}));
 
 // Schema validation
 export const insertFamilySchema = createInsertSchema(families);

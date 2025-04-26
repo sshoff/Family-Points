@@ -2,8 +2,13 @@ import { families, users, actionTemplates, assignedActions, actionSuggestions, i
 import { type User, type InsertUser, type Family, type InsertFamily, type ActionTemplate, type InsertActionTemplate, type AssignedAction, type InsertAssignedAction, type ActionSuggestion, type InsertActionSuggestion, type Invitation, type InsertInvitation } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { db, pool } from "./db";
+import { and, asc, between, desc, eq, gte, lte } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 const MemoryStore = createMemoryStore(session);
+const PostgresSessionStore = connectPg(session);
 
 // modify the interface with any CRUD methods
 // you might need
@@ -387,4 +392,370 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.SessionStore;
+
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
+  }
+
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+  
+  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (!user) throw new Error("User not found");
+    return user;
+  }
+
+  // Family methods
+  async getFamily(id: number): Promise<Family | undefined> {
+    const [family] = await db.select().from(families).where(eq(families.id, id));
+    return family;
+  }
+  
+  async createFamily(insertFamily: InsertFamily): Promise<Family> {
+    const [family] = await db.insert(families).values(insertFamily).returning();
+    return family;
+  }
+  
+  async getFamilyMembers(familyId: number): Promise<User[]> {
+    return db.select().from(users).where(eq(users.familyId, familyId));
+  }
+  
+  async removeFamilyMember(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  // Action template methods
+  async getActionTemplates(familyId: number): Promise<ActionTemplate[]> {
+    return db.select()
+      .from(actionTemplates)
+      .where(eq(actionTemplates.familyId, familyId));
+  }
+  
+  async getActionTemplate(id: number): Promise<ActionTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(actionTemplates)
+      .where(eq(actionTemplates.id, id));
+    return template;
+  }
+  
+  async createActionTemplate(template: InsertActionTemplate): Promise<ActionTemplate> {
+    const [actionTemplate] = await db
+      .insert(actionTemplates)
+      .values(template)
+      .returning();
+    return actionTemplate;
+  }
+  
+  async updateActionTemplate(id: number, templateData: Partial<ActionTemplate>): Promise<ActionTemplate> {
+    const [updatedTemplate] = await db
+      .update(actionTemplates)
+      .set(templateData)
+      .where(eq(actionTemplates.id, id))
+      .returning();
+    
+    if (!updatedTemplate) throw new Error("Action template not found");
+    return updatedTemplate;
+  }
+  
+  async deleteActionTemplate(id: number): Promise<void> {
+    await db.delete(actionTemplates).where(eq(actionTemplates.id, id));
+  }
+
+  // Assigned action methods
+  async getAssignedActions(childId: number): Promise<AssignedAction[]> {
+    return db.select()
+      .from(assignedActions)
+      .where(eq(assignedActions.childId, childId))
+      .orderBy(desc(assignedActions.date));
+  }
+  
+  async getAssignedActionsByDate(childId: number, date: Date): Promise<AssignedAction[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return db.select()
+      .from(assignedActions)
+      .where(
+        and(
+          eq(assignedActions.childId, childId),
+          gte(assignedActions.date, startOfDay),
+          lte(assignedActions.date, endOfDay)
+        )
+      );
+  }
+  
+  async getAssignedActionsForFamily(familyId: number): Promise<AssignedAction[]> {
+    // Get all child users in the family
+    const familyChildren = await db.select()
+      .from(users)
+      .where(
+        and(
+          eq(users.familyId, familyId),
+          eq(users.role, "child")
+        )
+      );
+    
+    const childIds = familyChildren.map(child => child.id);
+    
+    if (childIds.length === 0) {
+      return [];
+    }
+    
+    // Get all assigned actions for these children
+    const actions: AssignedAction[] = [];
+    for (const childId of childIds) {
+      const childActions = await this.getAssignedActions(childId);
+      actions.push(...childActions);
+    }
+    
+    return actions;
+  }
+  
+  async getAssignedAction(id: number): Promise<AssignedAction | undefined> {
+    const [action] = await db
+      .select()
+      .from(assignedActions)
+      .where(eq(assignedActions.id, id));
+    return action;
+  }
+  
+  async createAssignedAction(action: InsertAssignedAction): Promise<AssignedAction> {
+    const [assignedAction] = await db
+      .insert(assignedActions)
+      .values(action)
+      .returning();
+    return assignedAction;
+  }
+  
+  async updateAssignedAction(id: number, actionData: Partial<AssignedAction>): Promise<AssignedAction> {
+    const [updatedAction] = await db
+      .update(assignedActions)
+      .set(actionData)
+      .where(eq(assignedActions.id, id))
+      .returning();
+    
+    if (!updatedAction) throw new Error("Assigned action not found");
+    return updatedAction;
+  }
+  
+  async deleteAssignedAction(id: number): Promise<void> {
+    await db.delete(assignedActions).where(eq(assignedActions.id, id));
+  }
+
+  // Action suggestion methods
+  async getActionSuggestions(familyId: number, status?: string): Promise<ActionSuggestion[]> {
+    // Get all child users in the family
+    const familyChildren = await db.select()
+      .from(users)
+      .where(
+        and(
+          eq(users.familyId, familyId),
+          eq(users.role, "child")
+        )
+      );
+    
+    const childIds = familyChildren.map(child => child.id);
+    
+    if (childIds.length === 0) {
+      return [];
+    }
+    
+    // Get suggestions based on optional status
+    let query = db.select()
+      .from(actionSuggestions)
+      .orderBy(desc(actionSuggestions.createdAt));
+    
+    // Filter by child IDs
+    let suggestions: ActionSuggestion[] = [];
+    for (const childId of childIds) {
+      let childQuery = query.where(eq(actionSuggestions.childId, childId));
+      
+      // Add status filter if provided
+      if (status) {
+        childQuery = childQuery.where(eq(actionSuggestions.status, status));
+      }
+      
+      const childSuggestions = await childQuery;
+      suggestions.push(...childSuggestions);
+    }
+    
+    return suggestions;
+  }
+  
+  async getActionSuggestion(id: number): Promise<ActionSuggestion | undefined> {
+    const [suggestion] = await db
+      .select()
+      .from(actionSuggestions)
+      .where(eq(actionSuggestions.id, id));
+    return suggestion;
+  }
+  
+  async createActionSuggestion(suggestion: InsertActionSuggestion): Promise<ActionSuggestion> {
+    const now = new Date();
+    const [actionSuggestion] = await db
+      .insert(actionSuggestions)
+      .values({
+        ...suggestion,
+        status: "pending",
+      })
+      .returning();
+    return actionSuggestion;
+  }
+  
+  async updateActionSuggestion(id: number, suggestionData: Partial<ActionSuggestion>): Promise<ActionSuggestion> {
+    const [updatedSuggestion] = await db
+      .update(actionSuggestions)
+      .set(suggestionData)
+      .where(eq(actionSuggestions.id, id))
+      .returning();
+    
+    if (!updatedSuggestion) throw new Error("Action suggestion not found");
+    return updatedSuggestion;
+  }
+  
+  async approveActionSuggestion(id: number, decidedBy: number): Promise<ActionSuggestion> {
+    const now = new Date();
+    
+    // Update the suggestion status
+    const [updatedSuggestion] = await db
+      .update(actionSuggestions)
+      .set({
+        status: "approved",
+        decidedBy,
+        decidedAt: now
+      })
+      .where(eq(actionSuggestions.id, id))
+      .returning();
+    
+    if (!updatedSuggestion) throw new Error("Action suggestion not found");
+    
+    // Create a new assigned action based on the approved suggestion
+    await this.createAssignedAction({
+      actionTemplateId: updatedSuggestion.actionTemplateId,
+      childId: updatedSuggestion.childId,
+      assignedBy: decidedBy,
+      quantity: updatedSuggestion.quantity,
+      description: updatedSuggestion.description,
+      date: updatedSuggestion.date,
+      completed: false
+    });
+    
+    return updatedSuggestion;
+  }
+  
+  async declineActionSuggestion(id: number, decidedBy: number): Promise<ActionSuggestion> {
+    const now = new Date();
+    
+    const [updatedSuggestion] = await db
+      .update(actionSuggestions)
+      .set({
+        status: "declined",
+        decidedBy,
+        decidedAt: now
+      })
+      .where(eq(actionSuggestions.id, id))
+      .returning();
+    
+    if (!updatedSuggestion) throw new Error("Action suggestion not found");
+    return updatedSuggestion;
+  }
+
+  // Invitation methods
+  async createInvitation(invitation: InsertInvitation): Promise<Invitation> {
+    // Generate a random token
+    const token = randomBytes(16).toString('hex');
+    
+    const [newInvitation] = await db
+      .insert(invitations)
+      .values({
+        ...invitation,
+        token,
+        accepted: false
+      })
+      .returning();
+    
+    return newInvitation;
+  }
+  
+  async getInvitationByToken(token: string): Promise<Invitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(invitations)
+      .where(eq(invitations.token, token));
+    return invitation;
+  }
+  
+  async acceptInvitation(token: string): Promise<Invitation> {
+    const [updatedInvitation] = await db
+      .update(invitations)
+      .set({ accepted: true })
+      .where(eq(invitations.token, token))
+      .returning();
+    
+    if (!updatedInvitation) throw new Error("Invitation not found");
+    return updatedInvitation;
+  }
+
+  // Reporting methods
+  async getChildPointsForPeriod(childId: number, startDate: Date, endDate: Date): Promise<number> {
+    // Get all completed actions in the date range
+    const actions = await this.getChildActionsForPeriod(childId, startDate, endDate);
+    const completedActions = actions.filter(action => action.completed);
+    
+    let totalPoints = 0;
+    
+    // For each action, get the template to find points value
+    for (const action of completedActions) {
+      const template = await this.getActionTemplate(action.actionTemplateId);
+      if (template) {
+        totalPoints += Number(template.points) * action.quantity;
+      }
+    }
+    
+    return totalPoints;
+  }
+  
+  async getChildActionsForPeriod(childId: number, startDate: Date, endDate: Date): Promise<AssignedAction[]> {
+    return db.select()
+      .from(assignedActions)
+      .where(
+        and(
+          eq(assignedActions.childId, childId),
+          gte(assignedActions.date, startDate),
+          lte(assignedActions.date, endDate)
+        )
+      )
+      .orderBy(desc(assignedActions.date));
+  }
+}
+
+// Export an instance of DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();
