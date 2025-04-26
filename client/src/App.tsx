@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/hooks/use-auth";
 import { queryClient } from "@/lib/queryClient";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { NavBar } from "@/components/layout/nav-bar";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing-page";
 import AuthPage from "@/pages/auth-page";

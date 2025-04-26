@@ -51,5 +51,10 @@ function ProtectedComponent({
     );
   }
 
-  return <Component {...params} />;
+  return (
+    <>
+      <NavBar />
+      <Component {...params} />
+    </>
+  );
 }
