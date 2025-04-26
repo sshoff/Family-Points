@@ -132,7 +132,10 @@ const AuthPage = () => {
                         <FormControl>
                           <Input
                             {...field}
+                            type="text"
                             placeholder={t('auth.usernamePlaceholder')}
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -151,6 +154,8 @@ const AuthPage = () => {
                             {...field}
                             type="password"
                             placeholder="••••••••"
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -190,7 +195,10 @@ const AuthPage = () => {
                         <FormControl>
                           <Input
                             {...field}
+                            type="text"
                             placeholder={t('auth.namePlaceholder')}
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -207,7 +215,10 @@ const AuthPage = () => {
                         <FormControl>
                           <Input
                             {...field}
+                            type="text"
                             placeholder={t('auth.usernamePlaceholder')}
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -226,6 +237,8 @@ const AuthPage = () => {
                             {...field}
                             type="email"
                             placeholder={t('auth.emailPlaceholder')}
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -244,6 +257,8 @@ const AuthPage = () => {
                             {...field}
                             type="password"
                             placeholder="••••••••"
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -260,7 +275,10 @@ const AuthPage = () => {
                         <FormControl>
                           <Input
                             {...field}
+                            type="text"
                             placeholder={t('auth.familyNamePlaceholder')}
+                            onChange={field.onChange}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
