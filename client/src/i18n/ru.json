@@ -98,6 +98,32 @@
     "search": "Поиск действий",
     "pointsValue": "{{ points }} баллов"
   },
+  "action": {
+    "template": {
+      "title": "Шаблоны действий",
+      "name": "Название",
+      "description": "Описание",
+      "points": "Баллы",
+      "pointsUnit": "б.",
+      "pointsNegativeAllowed": "допускаются отрицательные значения",
+      "create": "Создать шаблон",
+      "createFirst": "Создайте свой первый шаблон",
+      "edit": "Редактировать шаблон",
+      "namePlaceholder": "Введите название действия",
+      "descriptionPlaceholder": "Введите описание (необязательно)",
+      "noTemplates": "Шаблоны действий не найдены",
+      "createSuccess": "Шаблон успешно создан",
+      "createSuccessDescription": "Шаблон действия был создан.",
+      "updateSuccess": "Шаблон успешно обновлен",
+      "updateSuccessDescription": "Шаблон действия был обновлен.",
+      "deleteSuccess": "Шаблон успешно удален",
+      "deleteSuccessDescription": "Шаблон действия был удален.",
+      "error": "Ошибка",
+      "errorDescription": "При обработке вашего запроса произошла ошибка.",
+      "confirmDelete": "Удалить шаблон?",
+      "confirmDeleteDescription": "Это приведет к безвозвратному удалению шаблона. Это действие нельзя отменить."
+    }
+  },
   "suggestions": {
     "suggestAction": "Предложить действие",
     "approve": "Одобрить",
@@ -163,6 +189,9 @@
     "delete": "Удалить",
     "save": "Сохранить",
     "cancel": "Отмена",
+    "create": "Создать",
+    "update": "Обновить",
+    "actions": "Действия",
     "search": "Поиск",
     "filter": "Фильтр",
     "sort": "Сортировка",
