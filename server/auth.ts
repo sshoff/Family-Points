@@ -74,26 +74,46 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password, name, email, familyName } = req.body;
+      const { username, password, name, email, familyName, role } = req.body;
       
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
       
-      // Create a new family
-      const family = await storage.createFamily({ name: familyName });
-      
-      // Create user with "head" role and associate with the new family
+      // Hash the password
       const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
-        username,
-        password: hashedPassword,
-        name,
-        email: email || null,
-        role: "head",
-        familyId: family.id,
-      });
+      let user;
+      
+      // If registering as head or there's no role specified, create a new family
+      if (role === "head" || !role) {
+        // Create a new family
+        const family = await storage.createFamily({ name: familyName });
+        
+        // Create user with "head" role and associate with the new family
+        user = await storage.createUser({
+          username,
+          password: hashedPassword,
+          name,
+          email: email || null,
+          role: "head",
+          familyId: family.id,
+        });
+      } else {
+        // For other roles (child, parent), there should be an existing family
+        // For this simple example, we'll just create a family for them too
+        // In a real app, you'd use invitations to join existing families
+        const family = await storage.createFamily({ name: familyName });
+        
+        user = await storage.createUser({
+          username,
+          password: hashedPassword,
+          name,
+          email: email || null,
+          role: role,
+          familyId: family.id,
+        });
+      }
 
       req.login(user, (err) => {
         if (err) return next(err);
