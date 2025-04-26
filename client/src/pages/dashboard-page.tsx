@@ -1,256 +1,196 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { Sidebar } from '@/components/layout/sidebar';
-import { DashboardSummary } from '@/components/dashboard/dashboard-summary';
-import { ActionCard } from '@/components/dashboard/action-card';
-import { Link } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/use-auth';
-import { UserRole } from '@shared/schema';
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "wouter";
 
 const DashboardPage = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
-  const [today] = useState(new Date());
+  const [selectedChild, setSelectedChild] = useState<string>("");
   
-  // Fetch today's actions
-  const { data: todaysActions, isLoading: isLoadingActions } = useQuery({
-    queryKey: ['/api/assigned-actions/today'],
-  });
-
-  // Fetch pending suggestions (only if user is head or parent)
-  const { data: pendingSuggestions, isLoading: isLoadingSuggestions } = useQuery({
-    queryKey: ['/api/action-suggestions/pending'],
-    enabled: user?.role !== UserRole.CHILD,
-  });
-
-  // Fetch family members
-  const { data: familyMembers, isLoading: isLoadingFamily } = useQuery({
-    queryKey: ['/api/family/members'],
-  });
-
   const formatDate = (date: Date) => {
-    return format(date, 'EEEE, MMMM d, yyyy');
+    return new Intl.DateTimeFormat(navigator.language, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(date);
   };
 
+  const todayActions = [
+    {
+      id: 1,
+      name: "Clean room",
+      points: 5,
+      quantity: 1,
+      assignedBy: "Mom",
+      isCompleted: true,
+      date: formatDate(new Date()),
+      description: "Clean your room and make your bed"
+    },
+    {
+      id: 2,
+      name: "Do homework",
+      points: 10,
+      quantity: 1,
+      assignedBy: "Dad",
+      isCompleted: false,
+      date: formatDate(new Date()),
+      description: "Complete math and science homework"
+    },
+    {
+      id: 3,
+      name: "Take out trash",
+      points: 3,
+      quantity: 1,
+      assignedBy: "Mom",
+      isCompleted: false,
+      date: formatDate(new Date()),
+      description: "Take out the trash from all rooms"
+    }
+  ];
+
+  // Mock family members data for selector
+  const familyMembers = [
+    { id: 1, name: "Alex", role: "child" },
+    { id: 2, name: "Emily", role: "child" },
+    { id: 3, name: "Sam", role: "child" }
+  ];
+
+  const childrenOptions = familyMembers.filter(member => member.role === "child");
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto lg:ml-64">
-        <div className="p-6">
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold mb-1">
-              {t('dashboard.welcomeBack')}, {user?.name}!
-            </h1>
-            <p className="text-gray-600">{formatDate(today)}</p>
-          </div>
-
-          {/* Dashboard Summary */}
-          <DashboardSummary />
-
-          {/* Today's Actions */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">{t('dashboard.todaysActions')}</h2>
-              <Link href="/actions">
-                <a className="text-primary-600 text-sm font-medium hover:underline">
-                  {t('dashboard.viewAll')}
-                </a>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with navigation */}
+      <header className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <Link href="/" className="text-xl font-bold text-primary-600">FamilyPoints</Link>
+            
+            <nav className="hidden md:flex space-x-6">
+              <Link href="/dashboard" className="text-primary-600 font-medium">Dashboard</Link>
+              <Link href="/actions" className="text-gray-700 hover:text-primary-600 transition">Actions</Link>
+              <Link href="/reports" className="text-gray-700 hover:text-primary-600 transition">Reports</Link>
+              <Link href="/family" className="text-gray-700 hover:text-primary-600 transition">Family</Link>
+              <Link href="/suggestions" className="text-gray-700 hover:text-primary-600 transition">Suggestions</Link>
+              <Link href="/settings" className="text-gray-700 hover:text-primary-600 transition">Settings</Link>
+            </nav>
+            
+            <div className="flex items-center space-x-3">
+              <Link href="/auth" className="text-gray-700 hover:text-primary-600 transition">
+                Logout
               </Link>
             </div>
-            
-            {isLoadingActions ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map(i => (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <Skeleton className="h-5 w-1/2" />
-                          <Skeleton className="h-5 w-12" />
-                        </div>
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-3/4" />
-                          <Skeleton className="h-4 w-1/2" />
-                        </div>
-                        <div className="flex justify-between">
-                          <Skeleton className="h-6 w-24 rounded-full" />
-                          <Skeleton className="h-6 w-6 rounded-full" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : todaysActions?.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {todaysActions.map((action: any) => (
-                  <ActionCard 
-                    key={action.id}
-                    id={action.id}
-                    name={action.actionTemplate.name}
-                    points={action.actionTemplate.points}
-                    assignedBy={action.assignedByUser.name}
-                    quantity={action.quantity}
-                    isCompleted={action.completed}
-                    date={action.date}
-                    description={action.description}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-6 flex justify-center">
-                  <p className="text-gray-500">{t('common.noData')}</p>
-                </CardContent>
-              </Card>
-            )}
           </div>
+        </div>
+      </header>
 
-          {/* Family Members and Pending Suggestions */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Family Members */}
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg font-semibold">
-                    {t('dashboard.familyMembers')}
-                  </CardTitle>
-                  {(user?.role === UserRole.HEAD || user?.role === UserRole.PARENT) && (
-                    <Link href="/family">
-                      <a className="text-primary-600 text-sm font-medium hover:underline">
-                        {t('family.inviteMembers')}
-                      </a>
-                    </Link>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoadingFamily ? (
-                  <div className="space-y-4">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className="flex items-center">
-                        <Skeleton className="h-10 w-10 rounded-full mr-3" />
-                        <div>
-                          <Skeleton className="h-5 w-24 mb-1" />
-                          <Skeleton className="h-4 w-16" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : familyMembers?.length > 0 ? (
-                  <div className="space-y-4">
-                    {familyMembers.map((member: any) => (
-                      <div key={member.id} className="flex items-center">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center mr-3 
-                          ${member.role === UserRole.HEAD ? 'bg-primary-100 text-primary-600' : 
-                            member.role === UserRole.PARENT ? 'bg-pink-100 text-pink-600' : 
-                            'bg-amber-100 text-amber-600'}`}>
-                          {member.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium">{member.name}</p>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                            ${member.role === UserRole.HEAD ? 'bg-primary-100 text-primary-700' : 
-                              member.role === UserRole.PARENT ? 'bg-blue-100 text-blue-700' : 
-                              'bg-amber-100 text-amber-700'}`}>
-                            {t(`roles.${member.role}`)}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center p-6 text-gray-500">
-                    <p>{t('common.noData')}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">{t('dashboard.welcomeBack')}, Parent User</h1>
+          
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">{t('actions.selectChild')}:</span>
+            <select 
+              className="border border-gray-300 rounded-md px-3 py-1.5"
+              value={selectedChild}
+              onChange={(e) => setSelectedChild(e.target.value)}
+            >
+              <option value="">All children</option>
+              {childrenOptions.map(child => (
+                <option key={child.id} value={child.id.toString()}>{child.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
 
-            {/* Pending Suggestions (Only for parents and heads) */}
-            {user?.role !== UserRole.CHILD && (
-              <Card>
-                <CardHeader className="pb-2">
+        {/* Dashboard Summary */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">{t('dashboard.thisWeek')}</h3>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-3xl font-bold text-primary-600">45</p>
+                <p className="text-sm text-gray-500">{t('dashboard.pointsEarned')}</p>
+              </div>
+              <div className="text-green-500 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm ml-1">+15%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">{t('dashboard.thisMonth')}</h3>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-3xl font-bold text-primary-600">156</p>
+                <p className="text-sm text-gray-500">{t('dashboard.pointsEarned')}</p>
+              </div>
+              <div className="text-green-500 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm ml-1">+8%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">{t('dashboard.actionsCompleted')}</h3>
+            <div className="flex items-end justify-between">
+              <div>
+                <p className="text-3xl font-bold text-primary-600">12</p>
+                <p className="text-sm text-gray-500">{t('actions.completed')}</p>
+              </div>
+              <div className="text-green-500 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm ml-1">+20%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">{t('dashboard.todaysActions')}</h2>
+            <Link href="/actions" className="text-primary-600 hover:underline text-sm">
+              {t('dashboard.viewAll')} →
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {todayActions.map(action => (
+              <div key={action.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className={`px-4 py-2 border-l-4 ${action.isCompleted ? 'border-green-500 bg-green-50' : 'border-orange-500 bg-orange-50'}`}>
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg font-semibold">
-                      {t('dashboard.pendingSuggestions')}
-                    </CardTitle>
-                    <Link href="/suggestions">
-                      <a className="text-primary-600 text-sm font-medium hover:underline">
-                        {t('dashboard.viewAll')}
-                      </a>
-                    </Link>
+                    <span className="font-medium">{action.name}</span>
+                    <span className="text-primary-600 font-bold">
+                      {action.points} × {action.quantity} = {action.points * action.quantity} pts
+                    </span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingSuggestions ? (
-                    <div className="space-y-4">
-                      {[1, 2].map(i => (
-                        <Card key={i}>
-                          <CardContent className="p-3">
-                            <div className="space-y-3">
-                              <div className="flex justify-between">
-                                <Skeleton className="h-5 w-1/2" />
-                                <Skeleton className="h-5 w-12" />
-                              </div>
-                              <Skeleton className="h-4 w-full" />
-                              <div className="flex space-x-2">
-                                <Skeleton className="h-8 w-24" />
-                                <Skeleton className="h-8 w-24" />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : pendingSuggestions?.length > 0 ? (
-                    <div className="space-y-4">
-                      {pendingSuggestions.map((suggestion: any) => (
-                        <Card key={suggestion.id}>
-                          <CardContent className="p-3">
-                            <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <p className="font-medium">{suggestion.actionTemplate.name}</p>
-                                <p className="text-sm text-gray-600">From: {suggestion.child.name}</p>
-                              </div>
-                              <span className={`font-semibold ${suggestion.actionTemplate.points >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                {suggestion.actionTemplate.points >= 0 ? '+' : ''}
-                                {suggestion.actionTemplate.points}
-                              </span>
-                            </div>
-                            {suggestion.description && (
-                              <p className="text-sm text-gray-600 mb-3">{suggestion.description}</p>
-                            )}
-                            <div className="flex space-x-2">
-                              <Link href={`/suggestions?approve=${suggestion.id}`}>
-                                <a className="px-3 py-1 text-sm font-medium rounded-md bg-primary-100 text-primary-700">
-                                  {t('suggestions.approve')}
-                                </a>
-                              </Link>
-                              <Link href={`/suggestions?decline=${suggestion.id}`}>
-                                <a className="px-3 py-1 text-sm font-medium rounded-md bg-red-100 text-red-700">
-                                  {t('suggestions.decline')}
-                                </a>
-                              </Link>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center p-6 text-gray-500">
-                      <p>{t('suggestions.noSuggestions')}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                </div>
+                <div className="p-4">
+                  <p className="text-gray-600 text-sm mb-3">{action.description}</p>
+                  <div className="flex justify-between items-center text-sm text-gray-500">
+                    <div>{action.assignedBy}</div>
+                    <div>{action.date}</div>
+                  </div>
+                  <div className="mt-4 flex justify-end space-x-2">
+                    {!action.isCompleted && (
+                      <button className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition">
+                        Complete
+                      </button>
+                    )}
+                    <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition">
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
