@@ -14,7 +14,7 @@ const PostgresSessionStore = connectPg(session);
 // you might need
 export interface IStorage {
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
   
   // User methods
   getUser(id: number): Promise<User | undefined>;
@@ -70,7 +70,7 @@ export class MemStorage implements IStorage {
   private actionSuggestions: Map<number, ActionSuggestion>;
   private invitations: Map<number, Invitation>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
   
   userCurrentId: number;
   familyCurrentId: number;
@@ -393,7 +393,7 @@ export class MemStorage implements IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: session.Store;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({ 
@@ -588,23 +588,32 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
-    // Get suggestions based on optional status
-    let query = db.select()
-      .from(actionSuggestions)
-      .orderBy(desc(actionSuggestions.createdAt));
+    // Build query conditions
+    const conditions = [];
     
-    // Filter by child IDs
+    // Add condition for each child ID (using IN operator would be better but we'll iterate for now)
     let suggestions: ActionSuggestion[] = [];
+    
     for (const childId of childIds) {
-      let childQuery = query.where(eq(actionSuggestions.childId, childId));
-      
-      // Add status filter if provided
+      // Different approach for different status filters
       if (status) {
-        childQuery = childQuery.where(eq(actionSuggestions.status, status));
+        const results = await db.select()
+          .from(actionSuggestions)
+          .where(and(
+            eq(actionSuggestions.childId, childId),
+            eq(actionSuggestions.status, status as "pending" | "approved" | "declined")
+          ))
+          .orderBy(desc(actionSuggestions.createdAt));
+        
+        suggestions.push(...results);
+      } else {
+        const results = await db.select()
+          .from(actionSuggestions)
+          .where(eq(actionSuggestions.childId, childId))
+          .orderBy(desc(actionSuggestions.createdAt));
+        
+        suggestions.push(...results);
       }
-      
-      const childSuggestions = await childQuery;
-      suggestions.push(...childSuggestions);
     }
     
     return suggestions;
