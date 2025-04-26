@@ -59,6 +59,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch family members" });
     }
   });
+  
+  // Remove family member route (only for heads)
+  app.delete("/api/family-members/:id", isHead, async (req, res) => {
+    try {
+      const memberId = parseInt(req.params.id);
+      
+      // Check if the member exists and is in the user's family
+      const member = await storage.getUser(memberId);
+      if (!member) {
+        return res.status(404).json({ message: "Member not found" });
+      }
+      
+      if (member.familyId !== req.user!.familyId) {
+        return res.status(403).json({ message: "You don't have permission to remove this member" });
+      }
+      
+      // Prevent removing yourself or another head
+      if (member.id === req.user!.id) {
+        return res.status(400).json({ message: "You cannot remove yourself" });
+      }
+      
+      if (member.role === UserRole.HEAD) {
+        return res.status(400).json({ message: "You cannot remove another head" });
+      }
+      
+      await storage.removeFamilyMember(memberId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove family member" });
+    }
+  });
+  
+  // Get invitations route (only for heads)
+  app.get("/api/invitations", isHead, async (req, res) => {
+    try {
+      // Get all invitations for the user's family
+      const invitations = await storage.getInvitations(req.user!.familyId!);
+      
+      res.json(invitations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+  
+  // Create invitation route (only for heads)
+  app.post("/api/invitations", isHead, async (req, res) => {
+    try {
+      const { email, role } = req.body;
+      
+      // Validate the role
+      if (role !== UserRole.PARENT && role !== UserRole.CHILD) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      // Create the invitation
+      const invitation = await storage.createInvitation({
+        email,
+        role,
+        familyId: req.user!.familyId!,
+        createdBy: req.user!.id,
+      });
+      
+      // TODO: Send invitation email
+      
+      res.status(201).json(invitation);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create invitation" });
+    }
+  });
+  
+  // Accept invitation route (public)
+  app.get("/api/invitations/:token/accept", async (req, res) => {
+    try {
+      const { token } = req.params;
+      
+      // Find the invitation
+      const invitation = await storage.getInvitationByToken(token);
+      if (!invitation) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+      
+      if (invitation.accepted) {
+        return res.status(400).json({ message: "Invitation already accepted" });
+      }
+      
+      // Mark the invitation as accepted
+      await storage.acceptInvitation(token);
+      
+      // Redirect to the register page with the invitation token
+      res.json({ 
+        message: "Invitation accepted. Please register to join the family.",
+        invitationToken: token
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to accept invitation" });
+    }
+  });
 
   // Action templates routes
   app.get("/api/action-templates", isAuthenticated, async (req, res) => {
