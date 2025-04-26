@@ -66,17 +66,17 @@ const DashboardPage = () => {
             <Link href="/" className="text-xl font-bold text-primary-600">FamilyPoints</Link>
             
             <nav className="hidden md:flex space-x-6">
-              <Link href="/dashboard" className="text-primary-600 font-medium">Dashboard</Link>
-              <Link href="/actions" className="text-gray-700 hover:text-primary-600 transition">Actions</Link>
-              <Link href="/reports" className="text-gray-700 hover:text-primary-600 transition">Reports</Link>
-              <Link href="/family" className="text-gray-700 hover:text-primary-600 transition">Family</Link>
-              <Link href="/suggestions" className="text-gray-700 hover:text-primary-600 transition">Suggestions</Link>
-              <Link href="/settings" className="text-gray-700 hover:text-primary-600 transition">Settings</Link>
+              <Link href="/dashboard" className="text-primary-600 font-medium">{t('nav.dashboard')}</Link>
+              <Link href="/actions" className="text-gray-700 hover:text-primary-600 transition">{t('nav.actions')}</Link>
+              <Link href="/reports" className="text-gray-700 hover:text-primary-600 transition">{t('nav.reports')}</Link>
+              <Link href="/family" className="text-gray-700 hover:text-primary-600 transition">{t('nav.family')}</Link>
+              <Link href="/suggestions" className="text-gray-700 hover:text-primary-600 transition">{t('nav.suggestions')}</Link>
+              <Link href="/settings" className="text-gray-700 hover:text-primary-600 transition">{t('nav.settings')}</Link>
             </nav>
             
             <div className="flex items-center space-x-3">
               <Link href="/auth" className="text-gray-700 hover:text-primary-600 transition">
-                Logout
+                {t('nav.logout')}
               </Link>
             </div>
           </div>
@@ -181,11 +181,11 @@ const DashboardPage = () => {
                   <div className="mt-4 flex justify-end space-x-2">
                     {!action.isCompleted && (
                       <button className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition">
-                        Complete
+                        {t('actions.completed')}
                       </button>
                     )}
                     <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition">
-                      Edit
+                      {t('common.edit')}
                     </button>
                   </div>
                 </div>

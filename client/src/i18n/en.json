@@ -98,6 +98,32 @@
     "search": "Search actions",
     "pointsValue": "{{ points }} pts"
   },
+  "action": {
+    "template": {
+      "title": "Action Templates",
+      "name": "Name",
+      "description": "Description",
+      "points": "Points",
+      "pointsUnit": "pts",
+      "pointsNegativeAllowed": "negative values allowed",
+      "create": "Create Template",
+      "createFirst": "Create your first template",
+      "edit": "Edit Template",
+      "namePlaceholder": "Enter action name",
+      "descriptionPlaceholder": "Enter description (optional)",
+      "noTemplates": "No action templates found",
+      "createSuccess": "Template created successfully",
+      "createSuccessDescription": "The action template has been created.",
+      "updateSuccess": "Template updated successfully",
+      "updateSuccessDescription": "The action template has been updated.",
+      "deleteSuccess": "Template deleted successfully",
+      "deleteSuccessDescription": "The action template has been deleted.",
+      "error": "Error",
+      "errorDescription": "There was an error processing your request.",
+      "confirmDelete": "Delete Template?",
+      "confirmDeleteDescription": "This will permanently delete the template. This action cannot be undone."
+    }
+  },
   "suggestions": {
     "suggestAction": "Suggest Action",
     "approve": "Approve",
