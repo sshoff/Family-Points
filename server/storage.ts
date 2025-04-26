@@ -698,14 +698,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Invitation methods
-  async createInvitation(invitation: InsertInvitation): Promise<Invitation> {
+  async getInvitations(familyId: number): Promise<Invitation[]> {
+    return db.select()
+      .from(invitations)
+      .where(eq(invitations.familyId, familyId))
+      .orderBy(desc(invitations.createdAt));
+  }
+  
+  async createInvitation(invitationData: Omit<InsertInvitation, 'token'>): Promise<Invitation> {
     // Generate a random token
     const token = randomBytes(16).toString('hex');
     
     const [newInvitation] = await db
       .insert(invitations)
       .values({
-        ...invitation,
+        ...invitationData,
         token,
         accepted: false
       })
