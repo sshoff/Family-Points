@@ -1,24 +1,51 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Check, Languages } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Languages } from 'lucide-react';
 
-export const LanguageSwitch = () => {
+export function LanguageSwitch() {
   const { t, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'ru' : 'en';
-    i18n.changeLanguage(newLang);
-    localStorage.setItem('language', newLang);
+  const languages = [
+    { code: 'en', label: t('settings.english') },
+    { code: 'ru', label: t('settings.russian') }
+  ];
+
+  const handleLanguageChange = (langCode: string) => {
+    i18n.changeLanguage(langCode);
+    setOpen(false);
   };
 
   return (
-    <Button 
-      variant="ghost" 
-      onClick={toggleLanguage} 
-      className="text-sm text-gray-600 flex items-center"
-    >
-      <Languages className="h-5 w-5 mr-2" />
-      <span>{t('nav.language')}</span>
-    </Button>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <Languages className="h-5 w-5" />
+          <span className="ml-2 hidden md:inline">{t('nav.language')}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {languages.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => handleLanguageChange(lang.code)}
+          >
+            <span className="flex items-center justify-between w-full">
+              {lang.label}
+              {i18n.language === lang.code && (
+                <Check className="h-4 w-4 ml-2" />
+              )}
+            </span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-};
+}
