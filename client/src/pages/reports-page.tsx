@@ -249,10 +249,10 @@ const ReportsPage = () => {
                               <div className="font-medium text-gray-900">Take out trash</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                              June 14, 2023
+                              {t('reports.date')}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="font-semibold text-primary-600">3 pts</div>
+                              <div className="font-semibold text-primary-600">{t('reports.points')}</div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
