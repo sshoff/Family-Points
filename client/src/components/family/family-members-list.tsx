@@ -142,10 +142,6 @@ export const FamilyMembersList = () => {
       
       {/* Family Members Table */}
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>{t("family.membersTitle")}</CardTitle>
-          <CardDescription>{t("family.membersDescription")}</CardDescription>
-        </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
@@ -201,7 +197,6 @@ export const FamilyMembersList = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle>{t("family.pendingInvitations")}</CardTitle>
-            <CardDescription>{t("family.pendingInvitationsDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoadingInvitations ? (

@@ -160,14 +160,20 @@
   },
   "family": {
     "title": "Family Members",
+    "members": "Current members",
     "inviteMembers": "Invite Members",
+    "name": "Name",
     "role": "Role",
     "email": "Email",
     "pendingInvitations": "Pending Invitations",
+    "inviteMember": "Invite to the family",
     "noInvitations": "No pending invitations",
     "invitationSent": "Invitation sent successfully",
     "selectRole": "Select Role",
-    "send": "Send Invitation"
+    "send": "Send Invitation",
+    "roleHead": "Parent (admin)",
+    "roleParent": "Parent",
+    "roleChild": "Child"
   },
   "reports": {
     "selectChild": "Select Child",
