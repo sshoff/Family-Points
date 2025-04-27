@@ -15,13 +15,6 @@ import {
 } from 'lucide-react';
 import { UserRole } from '@shared/schema';
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-  badge?: number;
-};
-
 export const Sidebar = () => {
   const { t } = useTranslation();
   const [location] = useLocation();
