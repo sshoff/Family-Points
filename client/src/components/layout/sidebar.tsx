@@ -28,24 +28,6 @@ export const Sidebar = () => {
   const { user, logoutMutation } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems: NavItem[] = [
-    { href: '/', label: t('nav.dashboard'), icon: <LayoutDashboard className="h-5 w-5 mr-3" /> },
-    { href: '/actions', label: t('nav.actions'), icon: <ListTodo className="h-5 w-5 mr-3" /> },
-    { href: '/reports', label: t('nav.reports'), icon: <BarChart3 className="h-5 w-5 mr-3" /> },
-    { href: '/family', label: t('nav.family'), icon: <Users className="h-5 w-5 mr-3" /> },
-  ];
-
-  // Only show suggestions for parents and heads
-  if (user?.role !== UserRole.CHILD) {
-    navItems.push({ 
-      href: '/suggestions', 
-      label: t('nav.suggestions'), 
-      icon: <MessagesSquare className="h-5 w-5 mr-3" /> 
-    });
-  }
-
-  navItems.push({ href: '/settings', label: t('nav.settings'), icon: <Settings className="h-5 w-5 mr-3" /> });
-
   useEffect(() => {
     // Close mobile menu when location changes
     setIsMobileMenuOpen(false);
@@ -110,33 +92,6 @@ export const Sidebar = () => {
               </div>
             </div>
           )}
-
-          {/* Navigation */}
-          <nav className="px-4 py-2 flex-grow">
-            <ul>
-              {navItems.map((item) => (
-                <li key={item.href} className="my-1">
-                  <Link href={item.href}>
-                    <a
-                      className={`flex items-center px-4 py-2 rounded-md ${
-                        location === item.href
-                          ? 'bg-primary-100 text-primary-600'
-                          : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      {item.icon}
-                      <span>{item.label}</span>
-                      {item.badge && (
-                        <span className="ml-auto bg-accent-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      )}
-                    </a>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
 
           {/* Footer actions */}
           <div className="px-6 py-4 border-t border-gray-200">
